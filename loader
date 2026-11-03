@@ -1,8 +1,3 @@
--- ===================================================================
---  ABDO-WARE 4-GAME UNIVERSAL LOADER (v2 — UGC-safe)
--- ===================================================================
-
--- Robust wait: never touch game.Players directly, never error on UGC DataModel
 local Players
 local deadline = os.clock() + 30
 while os.clock() < deadline do
@@ -18,18 +13,10 @@ while os.clock() < deadline do
 end
 
 if not Players then
-    warn("======================================")
-    warn("Abdo-Ware Loader: Players service unavailable.")
-    warn("DataModel ClassName = " .. tostring(game.ClassName))
-    warn("You're in a UGC world / menu / loading screen.")
-    warn("Join one of the supported games and re-run the loader.")
-    warn("======================================")
+    warn("Abdo-Ware Loader: Players service unavailable. DataModel = " .. tostring(game.ClassName))
     return
 end
 
--- ===================================================================
---  CONFIG
--- ===================================================================
 local GameRegistry = {
     [10200395747] = "https://raw.githubusercontent.com/abdrahmanthe/abdo-ware-growagarden2/refs/heads/main/gag2",
     [6504986360]  = "https://raw.githubusercontent.com/abdrahmanthe/abdo-ware-bubblegumsimulator/refs/heads/main/bgs",
@@ -43,9 +30,7 @@ local GameNames = {
     [372226183]   = "Flee the Facility",
     [6035872082]  = "Rivals",
 }
--- ===================================================================
 
--- Resolve GameId (with API fallback in case game.GameId returns 0)
 local currentGameId = game.GameId
 if currentGameId == 0 then
     local ok, resp = pcall(function()
@@ -59,36 +44,26 @@ end
 local scriptUrl = GameRegistry[currentGameId]
 local gameName  = GameNames[currentGameId] or "Unknown Game"
 
-print("======================================")
-print("Abdo-Ware Loader: GameId = " .. tostring(currentGameId))
-print("Abdo-Ware Loader: Game   = " .. gameName)
-print("======================================")
-
 if not scriptUrl then
-    warn("Abdo-Ware Loader: This game is NOT supported. (GameId: " .. tostring(currentGameId) .. ")")
+    warn("Abdo-Ware Loader: Unsupported game. GameId = " .. tostring(currentGameId))
     return
 end
 
-print("Abdo-Ware Loader: Downloading " .. gameName .. " script...")
-local success, response = pcall(function()
-    return game:HttpGet(scriptUrl)
-end)
-
+local success, response = pcall(function() return game:HttpGet(scriptUrl) end)
 if not success or not response or response == "" then
-    warn("Abdo-Ware Loader: Failed to download script from:\n" .. scriptUrl)
+    warn("Abdo-Ware Loader: Download failed. " .. scriptUrl)
     return
 end
 
 local scriptFunction, compileError = loadstring(response)
 if not scriptFunction then
-    warn("Abdo-Ware Loader: Failed to compile script: " .. tostring(compileError))
+    warn("Abdo-Ware Loader: Compile failed. " .. tostring(compileError))
     return
 end
 
-print("Abdo-Ware Loader: Executing...")
 local execSuccess, execError = pcall(scriptFunction)
 if not execSuccess then
-    warn("Abdo-Ware Loader: Script error: " .. tostring(execError))
+    warn("Abdo-Ware Loader: Runtime error. " .. tostring(execError))
 else
-    print("Abdo-Ware Loader:  " .. gameName .. " loaded successfully!")
+    print("Abdo-Ware Loader: " .. gameName .. " loaded.")
 end
